@@ -116,7 +116,7 @@
     </div>
     <Card
       style="flex: 0 0; padding: 10px; align-items: center; margin: 15px;
-      box-sizing: border-box; display: flex; flex-direction: row;">
+      display: flex; flex-direction: row;">
       <Textfield
         fullwidth
         lineRipple={false}
