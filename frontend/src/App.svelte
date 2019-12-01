@@ -26,15 +26,27 @@
   client.on("connect", function() {
     client.subscribe("user/other", function(err) {
       if (!err) {
-        client.publish("user/me", "Hello mqtt");
+      }else{
+        console.error(err)
+      }
+    });
+
+     client.subscribe("user/me", function(err) {
+      if (!err) {
+      }else{
+        console.error(err)
       }
     });
   });
 
-  client.on("message", function(topic, message, packet) {
+  client.on("message", function(topic, received, packet) {
 		// message is Buffer
-		console.log(arguments);
-		messages[messages.length] = { text: message.toString() };
+    console.log(arguments);
+    if(topic == "user/me") {
+      message = ""
+    }
+    
+		messages[messages.length] = { text: received.toString(), mine: topic === "user/me" ? true : false };
 		
     // client.end();
   });
@@ -43,11 +55,11 @@
   let message = "";
   let messages = [];
 
-  function add() {
+  function add(event) {
     if (message.trim() === "") {
       return;
     }
-		messages[messages.length] = { text: message };
+		// messages[messages.length] = { text: message, mine: true };
     client.publish("user/me", message);
 		
   }
@@ -91,14 +103,13 @@
   </TopAppBar>
   <div
     style="display: flex; flex-direction: column; max-height: 100%; height:
-    calc(100% - 64px); width: 65%; margin: auto;">
+    calc(100% - 64px); width: 45%; margin: auto;">
     <div
       clas="container"
-      style="flex: 1; display: flex; flex-direction: column; overflow-y: scroll;">
+      style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;">
       {#each messages as message}
         <Card
-          style="padding: 10px; margin: 15px 15px 0px 15px; box-sizing:
-          border-box;">
+          style="padding: 10px; margin: 15px 15px 0px 15px; width: max-content; {message.mine == false ? "background-color: var(--mdc-theme-primary,#6200ee); color: #fff; align-self: flex-start;" : "align-self: flex-end;"}">
           {message.text}
         </Card>
       {/each}
@@ -112,7 +123,8 @@
         style="flex: 1;"
         bind:value={message}
         color="primary"
-        label="Message" />
+        label="Message" 
+        on:keypress={(event) => { if(event.key === "Enter") { add() } } }/>
       <Button variant="raised" style="flex: 0 100px;" on:click={add}>
         Send
       </Button>
